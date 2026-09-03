@@ -27,7 +27,13 @@ export default function HomePage() {
   return (
     <div className="flex h-screen flex-col items-center justify-center gap-4">
       <h1 className="text-2xl font-bold">Hey, {user.displayName?.split(" ")[0] || "Runner"}</h1>
-      <p className="text-neutral-400">You&apos;re signed in. Let&apos;s build the rest from here.</p>
+      <p className="text-neutral-400">Ready to run?</p>
+      <a
+        href="/run"
+        className="rounded-full bg-orange-600 px-8 py-4 font-semibold text-white hover:opacity-90"
+      >
+        Start a run
+      </a>
       <button onClick={logOut} className="text-sm text-neutral-400 underline">
         Sign out
       </button>
