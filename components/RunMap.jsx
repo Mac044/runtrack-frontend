@@ -3,6 +3,7 @@
 import { MapContainer, TileLayer, Polyline, Marker, useMap } from "react-leaflet";
 import { useEffect } from "react";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 // Default Leaflet marker icons reference files that don't resolve correctly
 // under bundlers like webpack/Next - this fixes that.
