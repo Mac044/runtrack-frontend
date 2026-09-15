@@ -2,19 +2,27 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useAuth } from "../../hooks/useAuth";
 import { getRuns } from "../../lib/api";
 
 export default function HistoryPage() {
+  const { user, loading: authLoading } = useAuth();
   const [runs, setRuns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     getRuns()
       .then(setRuns)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [authLoading, user]);
 
   return (
     <div className="min-h-screen px-6 py-8">
@@ -25,16 +33,20 @@ export default function HistoryPage() {
         </Link>
       </div>
 
-      {loading && <p className="text-neutral-400">Loading...</p>}
+      {(authLoading || loading) && <p className="text-neutral-400">Loading...</p>}
       {error && <p className="text-red-400">{error}</p>}
 
-      {!loading && !error && runs.length === 0 && (
+      {!authLoading && !loading && !error && runs.length === 0 && (
         <p className="text-neutral-400">No runs yet. Go run something!</p>
       )}
 
       <div className="flex flex-col gap-3">
         {runs.map((run) => (
-          <div key={run._id} className="rounded-xl bg-neutral-900 p-4">
+          <Link
+            key={run._id}
+            href={`/history/${run._id}`}
+            className="block rounded-xl bg-neutral-900 p-4 hover:bg-neutral-800"
+          >
             <div className="flex items-center justify-between">
               <span className="font-semibold">
                 {new Date(run.startTime).toLocaleDateString()}
@@ -48,7 +60,7 @@ export default function HistoryPage() {
               <span>{formatDuration(run.durationSeconds)}</span>
               <span>{formatPace(run.avgPaceSecPerKm)}</span>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
