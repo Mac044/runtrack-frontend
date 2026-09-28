@@ -50,16 +50,10 @@ export default function HomePage() {
       </section>
 
       <div className="flex gap-4">
-        
-          href="/run"
-          className="rounded-full bg-orange-600 px-8 py-4 font-semibold text-white hover:opacity-90"
-        >
+        <a href="/run" className="rounded-full bg-orange-600 px-8 py-4 font-semibold text-white hover:opacity-90">
           Start a run
         </a>
-        
-          href="/history"
-          className="rounded-full border border-neutral-700 px-8 py-4 font-semibold text-white hover:bg-neutral-900"
-        >
+        <a href="/history" className="rounded-full border border-neutral-700 px-8 py-4 font-semibold text-white hover:bg-neutral-900">
           View history
         </a>
       </div>
