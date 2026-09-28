@@ -2,20 +2,60 @@
 
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGeolocationTracker } from "../../hooks/useGeolocationTracker";
 import { saveRun } from "../../lib/api";
 
-// Leaflet touches `window`, so it can only render on the client
 const RunMap = dynamic(() => import("../../components/RunMap"), { ssr: false });
 
 export default function RunPage() {
   const router = useRouter();
   const { route, distanceMeters, isTracking, error, start, stop } = useGeolocationTracker();
   const [saving, setSaving] = useState(false);
+  const wakeLockRef = useRef(null);
+
+  const requestWakeLock = async () => {
+    try {
+      if ("wakeLock" in navigator) {
+        wakeLockRef.current = await navigator.wakeLock.request("screen");
+      }
+    } catch (err) {
+      console.error("Wake lock request failed:", err);
+    }
+  };
+
+  const releaseWakeLock = async () => {
+    try {
+      await wakeLockRef.current?.release();
+    } catch (err) {
+      console.error("Wake lock release failed:", err);
+    } finally {
+      wakeLockRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (isTracking && document.visibilityState === "visible") {
+        requestWakeLock();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      releaseWakeLock();
+    };
+  }, [isTracking]);
+
+  const handleStart = () => {
+    start();
+    requestWakeLock();
+  };
 
   const handleStop = async () => {
     const summary = stop();
+    await releaseWakeLock();
 
     if (summary.route.length < 2) {
       router.push("/");
@@ -65,7 +105,7 @@ export default function RunPage() {
 
         {!isTracking ? (
           <button
-            onClick={start}
+            onClick={handleStart}
             className="w-full rounded-full bg-orange-600 py-4 text-lg font-semibold text-white"
           >
             Start Run
